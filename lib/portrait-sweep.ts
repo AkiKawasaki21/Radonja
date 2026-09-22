@@ -215,8 +215,10 @@ export function createPortraitSweep({ plane, surface, reveal, clipPath, reduced,
   surface.addEventListener("pointercancel", leave);
   surface.addEventListener("click", toggle);
 
-  const observer = new IntersectionObserver(([entry]) => {
-    visible = entry.isIntersecting;
+  // Pinning the stage flips it to position: fixed, which can deliver a stale
+  // "left the viewport" entry alongside the current one. Only the last is true.
+  const observer = new IntersectionObserver((entries) => {
+    visible = entries[entries.length - 1].isIntersecting;
     plane.dataset.waveActive = String(visible);
     if (!visible) {
       cancelAnimationFrame(frameId);
