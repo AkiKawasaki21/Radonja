@@ -18,7 +18,7 @@ type SweepElements = {
 export function createPortraitSweep({ plane, surface, reveal, clipPath, reduced, mouse }: SweepElements) {
   const lifetime = 580;
   // The portrait keeps drifting on its own so the gesture advertises itself.
-  // A narrower ribbon and a dimmer reveal keep the face behind a real swipe.
+  // A narrower ribbon and a dimmer reveal keep a real swipe the stronger one.
   const ambient = {
     enabled: !reduced,
     width: 0.72,
@@ -33,7 +33,7 @@ export function createPortraitSweep({ plane, surface, reveal, clipPath, reduced,
     nextAt: 0,
   };
   // The head, in the photo's own coordinates. The contour mask uses the same spot.
-  const face = { x: 0.44, y: 0.45, radius: 0.19 };
+  const face = { x: 0.44, y: 0.45 };
   // The gold icon ring in the hidden artwork, measured in the same coordinates.
   // Radii are in plane widths so a circle here stays a circle on screen.
   const halo = { x: 0.447, y: 0.461, radius: 0.267 };
@@ -191,43 +191,56 @@ export function createPortraitSweep({ plane, surface, reveal, clipPath, reduced,
     };
   };
 
-  // The hidden artwork is a gold icon halo ringing the head. The drift traces
-  // that ring, so the idle motion lights the aura instead of the face.
+  // Passes come from every direction and land anywhere the artwork has paint —
+  // across the face, over the top of the head, corner to corner.
   const composeGesture = (time: number): Gesture => {
     const view = measure();
-    const centre = { x: face.x, y: face.y * aspect };
+    const centre = { x: halo.x, y: halo.y * aspect };
     const phase = Math.random() * Math.PI * 2;
+    const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
 
-    if (Math.random() < 0.72) {
-      const radius = halo.radius * (0.96 + Math.random() * 0.17);
+    // Half the passes aim near the head, half anywhere in frame. Together they
+    // cover the whole portrait without leaving the interesting part to chance.
+    const anchor = () => {
+      if (Math.random() < 0.5) {
+        const angle = Math.random() * Math.PI * 2;
+        const reach = Math.sqrt(Math.random()) * halo.radius * 0.8;
+        return {
+          x: clamp(centre.x + Math.cos(angle) * reach, view.left, view.right),
+          y: clamp(centre.y + Math.sin(angle) * reach, view.top, view.bottom),
+        };
+      }
+      return {
+        x: view.left + Math.random() * (view.right - view.left),
+        y: view.top + Math.random() * (view.bottom - view.top),
+      };
+    };
+
+    if (Math.random() < 0.38) {
+      // A curl around the head. The radius runs from over the face to outside
+      // the icon ring, so no two circle the same line.
+      const radius = halo.radius * (0.34 + Math.random() * 0.95);
       const from = Math.random() * Math.PI * 2;
-      const sweep = (1.3 + Math.random() * 1.6) * (Math.random() < 0.5 ? -1 : 1);
+      const sweep = (1.2 + Math.random() * 1.8) * (Math.random() < 0.5 ? -1 : 1);
       return {
         began: time,
-        duration: (Math.abs(sweep) / (0.55 + Math.random() * 0.42)) * 1000,
+        duration: (Math.abs(sweep) / (0.5 + Math.random() * 0.45)) * 1000,
         at: (progress) => {
           const angle = from + sweep * progress;
-          // A slow breath in and out of the ring keeps it off a perfect circle.
-          const reach = radius * (1 + 0.06 * Math.sin(progress * Math.PI * 2.4 + phase));
-          return { x: halo.x + Math.cos(angle) * reach, y: halo.y * aspect + Math.sin(angle) * reach };
+          // A slow breath in and out keeps it off a perfect circle.
+          const reach = radius * (1 + 0.09 * Math.sin(progress * Math.PI * 2.4 + phase));
+          return { x: centre.x + Math.cos(angle) * reach, y: centre.y + Math.sin(angle) * reach };
         },
       };
     }
 
-    // Now and then a longer pass sails by, tangent to the ring.
+    // A pass clean across the frame, from any edge, at any angle.
     const span = Math.hypot(view.right - view.left, view.bottom - view.top) * 1.15;
-    const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
-    const steep = Math.random() < 0.3;
-    const angle = (Math.random() - 0.5) * (steep ? 1.6 : 0.7) + (steep ? Math.PI / 2 : 0) + (Math.random() < 0.5 ? 0 : Math.PI);
+    const angle = Math.random() * Math.PI * 2;
     const along = { x: Math.cos(angle), y: Math.sin(angle) };
     const across = { x: -along.y, y: along.x };
-    // Far enough out that the eyes and mouth stay the visitor's to earn.
-    const offset = (face.radius * 1.16 + Math.random() * 0.1) * (Math.random() < 0.5 ? -1 : 1);
-    const through = {
-      x: clamp(centre.x + across.x * offset, view.left + 0.03, view.right - 0.03),
-      y: clamp(centre.y + across.y * offset, view.top + 0.03, view.bottom - 0.03),
-    };
-    const bend = (0.04 + Math.random() * 0.12) * (Math.random() < 0.5 ? -1 : 1);
+    const through = anchor();
+    const bend = (0.04 + Math.random() * 0.16) * (Math.random() < 0.5 ? -1 : 1);
     const at = (distance: number, lateral: number) => ({
       x: through.x + along.x * distance + across.x * lateral,
       y: through.y + along.y * distance + across.y * lateral,
