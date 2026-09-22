@@ -1,0 +1,36 @@
+{
+  "name": "radonja",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "next build",
+    "start": "next start --hostname 0.0.0.0",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "check:bundle": "node scripts/check-bundle.mjs",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "client-only": "^0.0.1",
+    "gsap": "^3.13.0",
+    "lenis": "^1.3.26",
+    "next": "15.5.25",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@tailwindcss/postcss": "^4.1.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "15.5.25",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.8.0"
+  },
+  "overrides": {
+    "postcss": "^8.5.28"
+  }
+}

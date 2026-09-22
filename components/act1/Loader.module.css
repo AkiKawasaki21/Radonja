@@ -1,0 +1,8 @@
+.loader { position: fixed; inset: 0; z-index: 100; background: var(--color-carbon); color: var(--color-bone); display: grid; place-items: center; pointer-events: none; animation: failOpen 0s 1.6s forwards; }
+.numeral { font-family: var(--font-anton), sans-serif; font-size: clamp(100px, 20vw, 240px); color: var(--color-gold); line-height: 1; margin-top: -60px; }
+.band { position: absolute; top: 50%; left: 0; width: 0; height: 2px; background: var(--color-gold); transform: translateY(-50%); z-index: 1; }
+.label { position: absolute; top: 42px; font-size: 10px; letter-spacing: .2em; }
+.bottom { position: absolute; bottom: 40px; font-family: var(--font-bebas), sans-serif; font-size: 15px; letter-spacing: .15em; }
+:global(html[data-radonja-seen="true"]) .loader { display: none; }
+@keyframes failOpen { to { visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .loader { display: none; } }

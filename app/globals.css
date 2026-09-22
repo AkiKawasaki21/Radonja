@@ -1,0 +1,44 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+@theme inline {
+  --color-carbon: #0b0b0c;
+  --color-graphite: #1c1c1f;
+  --color-bone: #f2ede4;
+  --color-gold: #c9a646;
+  --color-goldDeep: #8f7330;
+  --color-crimson: #b3202a;
+  --font-display: var(--font-anton);
+  --font-caption: var(--font-bebas);
+  --font-serif: var(--font-instrument-serif);
+  --font-sans: var(--font-instrument-sans);
+}
+
+:root {
+  --color-carbon: #0b0b0c;
+  --color-graphite: #1c1c1f;
+  --color-bone: #f2ede4;
+  --color-gold: #c9a646;
+  --color-goldDeep: #8f7330;
+  --color-crimson: #b3202a;
+  color-scheme: dark;
+  background: var(--color-carbon);
+  color: var(--color-bone);
+  font-family: var(--font-instrument-sans), sans-serif;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button { font: inherit; }
+a { color: inherit; }
+button, a { touch-action: manipulation; }
+::selection { background: var(--color-gold); color: var(--color-carbon); }
+:focus-visible { outline: 2px solid var(--color-gold); outline-offset: 7px; }
+.skip-link { position: fixed; top: 16px; left: 16px; z-index: 200; padding: 12px 20px; background: var(--color-bone); color: var(--color-carbon); transform: translateY(-200%); }
+.skip-link:focus { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

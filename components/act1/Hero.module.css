@@ -1,0 +1,75 @@
+.hero {
+  height: 100vh;
+  height: 100svh;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--color-carbon);
+}
+.portrait { position: absolute; inset: 0 0 0 42%; padding: 0; border: 0; background: var(--color-carbon); overflow: hidden; text-align: left; }
+.stare { object-fit: cover; object-position: 50% 45%; }
+.reveal { position: absolute; inset: 0; opacity: 0; transform-origin: 52% 45%; }
+.flag { object-fit: cover; object-position: 50% 30%; }
+.imageShade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, var(--color-carbon) 0%, rgb(11 11 12 / 40%) 21%, transparent 65%), linear-gradient(0deg, rgb(11 11 12 / 65%), transparent 35%); }
+.masthead { position: absolute; inset: 38px 4.2vw auto; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none; }
+.number { font-family: var(--font-anton), sans-serif; font-size: 62px; line-height: 1; letter-spacing: -.055em; }
+.numberBand { display: block; width: 29px; height: 5px; background: var(--color-bone); margin-top: 10px; transform: rotate(-7deg); }
+.location { font-size: 10px; line-height: 1.6; letter-spacing: .18em; padding-top: 8px; }
+.location span { padding: 0 12px; }
+.titleBlock { position: absolute; top: 43%; left: 4.2vw; pointer-events: none; }
+.eyebrow { font-family: var(--font-bebas), sans-serif; font-size: clamp(18px, 1.8vw, 25px); letter-spacing: .12em; margin: 0 0 20px .3vw; }
+.titleBlock h1 { font-family: var(--font-anton), sans-serif; font-size: clamp(64px, 18vw, 260px); font-weight: 400; line-height: .96; letter-spacing: -.032em; margin: 0 0 28px -.45vw; }
+.tape { display: block; width: clamp(75px, 10vw, 150px); height: 11px; background: var(--color-gold); transform: rotate(-3deg); }
+.bottom { position: absolute; left: 4.2vw; right: 4.2vw; bottom: 35px; display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; }
+.nextMatch { display: flex; flex-direction: column; gap: 9px; text-decoration: none; }
+.nextMatch > span:first-child { font-size: 9px; letter-spacing: .16em; color: rgb(242 237 228 / 62%); }
+.nextMatch > span:first-child span { padding-left: 9px; }
+.fixture { font-family: var(--font-bebas), sans-serif; font-size: 18px; letter-spacing: .05em; }
+.fixture > span { padding: 0 5px; }
+.fixture > span:first-child { padding: 0 5px 0 0; }
+.scrollCue { text-decoration: none; display: flex; flex-direction: column; align-items: flex-end; gap: 14px; }
+.scrollCue > span { font-size: 8px; letter-spacing: .17em; }
+.scrollCue i { display: block; width: 45px; height: 6px; background: var(--color-bone); transform-origin: right; animation: pulse 2.2s ease-in-out infinite; }
+.portraitHint { position: absolute; right: 4.2vw; bottom: 24%; font-size: 8px; letter-spacing: .13em; pointer-events: none; opacity: .6; writing-mode: vertical-rl; }
+.portraitHint span { padding-top: 12px; }
+.cursor { visibility: hidden; position: absolute; top: 0; left: 0; pointer-events: none; display: flex; align-items: center; gap: 9px; color: var(--color-gold); font-family: var(--font-bebas), sans-serif; font-size: 18px; letter-spacing: .08em; z-index: 5; }
+.cursor i { display: block; width: 12px; height: 12px; background: var(--color-gold); border-radius: 50%; }
+@keyframes pulse { 0%, 100% { transform: scaleX(1); opacity: 1; } 50% { transform: scaleX(.55); opacity: .45; } }
+@media (min-width: 768px) and (hover: hover) and (pointer: fine) { .portrait { cursor: none; } }
+@media (min-width: 1700px) { .titleBlock { top: 44%; } }
+@media (max-width: 767px) {
+  .portrait { inset: 0; }
+  .stare { object-position: 58% 36%; }
+  .imageShade { background: linear-gradient(0deg, var(--color-carbon) 0%, rgb(11 11 12 / 60%) 23%, transparent 70%), linear-gradient(90deg, rgb(11 11 12 / 25%), transparent 80%); }
+  .masthead { inset: 25px 6vw auto; }
+  .number { font-size: 45px; }
+  .numberBand { width: 23px; height: 4px; }
+  .location { font-size: 8px; max-width: 145px; text-align: right; }
+  .location span { padding: 0 5px; }
+  .titleBlock { left: 6vw; top: auto; bottom: 24%; }
+  .titleBlock h1 { font-size: clamp(64px, 18vw, 260px); margin-bottom: 20px; }
+  .eyebrow { font-size: 17px; margin-bottom: 14px; letter-spacing: .08em; }
+  .tape { height: 8px; width: 70px; }
+  .bottom { left: 6vw; right: 6vw; bottom: 27px; gap: 12px; }
+  .fixture { font-size: 14px; max-width: 250px; }
+  .scrollCue > span, .portraitHint { display: none; }
+  .scrollCue { padding: 16px 0 5px 14px; }
+  .scrollCue i { width: 28px; height: 5px; }
+}
+@media (prefers-reduced-motion: reduce) { .scrollCue i { animation: none; } }
+@media (max-height: 700px) and (min-width: 768px) {
+  .titleBlock { top: 31%; }
+  .eyebrow { margin-bottom: 12px; }
+  .titleBlock h1 { margin-bottom: 16px; }
+  .masthead { top: 22px; }
+  .number { font-size: 42px; }
+  .bottom { bottom: 22px; }
+}
+@media (max-height: 480px) {
+  .titleBlock { top: auto; bottom: 26%; }
+  .eyebrow { margin-bottom: 7px; font-size: 15px; }
+  .titleBlock h1 { line-height: .88; margin-bottom: 12px; }
+  .number { font-size: 30px; }
+  .numberBand { display: none; }
+  .bottom { bottom: 15px; }
+}
