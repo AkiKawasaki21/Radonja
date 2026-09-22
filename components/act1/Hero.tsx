@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { gsap } from "@/lib/gsap";
 import { createPortraitSweep } from "@/lib/portrait-sweep";
 import { acquireScrollLock } from "@/lib/scroll-lock";
+import { useMotionPreference } from "@/lib/motion-preference";
 import { nextMatch } from "@/content/schedule";
 import portraitPhoto from "@/public/portraits/radonja-main.png";
 import hiddenPortrait from "@/public/portraits/hidden-portrait.png";
@@ -13,6 +14,7 @@ import PortraitWaves from "./PortraitWaves";
 import styles from "./Hero.module.css";
 
 export default function Hero() {
+  const { reduced, setPreference } = useMotionPreference();
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
@@ -67,11 +69,11 @@ export default function Hero() {
     const media = gsap.matchMedia();
 
     media.add({
-      reduced: "(prefers-reduced-motion: reduce)",
+      all: "(min-width: 0px)",
       small: "(max-width: 767px)",
       mouse: "(hover: hover) and (pointer: fine)",
     }, (context) => {
-      const { reduced, small, mouse } = context.conditions!;
+      const { small, mouse } = context.conditions!;
       const cleanupSweep = createPortraitSweep({
         plane, surface, reveal, clipPath, reduced, mouse,
       });
@@ -104,7 +106,7 @@ export default function Hero() {
       return cleanupSweep;
     });
     return () => media.revert();
-  }, []);
+  }, [reduced]);
 
   return (
     <section ref={sectionRef} id="hero" className={styles.story} aria-labelledby="hero-title">
@@ -127,18 +129,18 @@ export default function Hero() {
                   </clipPath>
                 </defs>
               </svg>
-              <Image id="hero-stare" src={portraitPhoto} alt="Radonja looking toward the sky before the match" fill priority unoptimized sizes="(max-width: 767px) 104svh, 112vw" placeholder="blur" className={styles.basePhoto} />
+              <Image id="hero-stare" src={portraitPhoto} alt="Andrija Radonjic looking toward the sky before the match" fill priority unoptimized sizes="(max-width: 767px) 116svh, 112vw" placeholder="blur" className={styles.basePhoto} />
               <PortraitWaves clipId="portrait-sweep" />
               <div ref={revealRef} className={styles.reveal} data-testid="portrait-reveal" aria-hidden="true">
                 <div className={styles.artBounds}>
-                  <Image id="hero-reveal" src={hiddenPortrait} alt="" fill loading="eager" fetchPriority="low" unoptimized sizes="(max-width: 767px) 63svh, 68vw" placeholder="blur" className={styles.hiddenPhoto} />
+                  <Image id="hero-reveal" src={hiddenPortrait} alt="" fill loading="eager" fetchPriority="low" unoptimized sizes="(max-width: 767px) 70svh, 68vw" placeholder="blur" className={styles.hiddenPhoto} />
                 </div>
               </div>
             </div>
           </button>
           <div className={styles.shade} aria-hidden="true" />
           <header className={styles.masthead}>
-            <a href="#hero" aria-label="Radonja, back to the top" className={styles.monogram} onClick={unlockPortrait}>15<span /></a>
+            <a href="#hero" aria-label="Andrija Radonjic, back to the top" className={styles.monogram} onClick={unlockPortrait}>15<span /></a>
             <span className={styles.location}>MONTENEGRO <i>→</i> CALIFORNIA</span>
           </header>
           <div ref={lockControlRef} className={styles.exploreControl}>
@@ -155,15 +157,15 @@ export default function Hero() {
                 <path d={portraitLocked ? "M8 10V6a4 4 0 0 1 8 0v4" : "M8 10V6a4 4 0 0 1 7.7-1.5"} />
                 <path d="M12 14v3" />
               </svg>
-              <span>{portraitLocked ? "Unlock scroll" : "Lock to explore"}</span>
+              <span>{portraitLocked ? "Unlock scroll" : "Explore portrait"}</span>
             </button>
             <span id="portrait-lock-status" className={styles.lockStatus} role="status">
-              {portraitLocked ? "Swipe freely. Tap to unlock." : "Pause scrolling. Explore his portrait."}
+              {portraitLocked ? "Swipe freely. Tap to unlock." : "Lock scrolling to swipe"}
             </span>
           </div>
           <div className={styles.titleBlock}>
             <p className={styles.eyebrow}>Nº 15 · STRIKER · MONTENEGRO</p>
-            <h1 id="hero-title">RADONJA</h1>
+            <h1 id="hero-title" aria-label="Andrija Radonjic"><span className={styles.firstName}>ANDRIJA</span>RADONJIC</h1>
             <span className={styles.tape} aria-hidden="true" />
           </div>
           <p id="portrait-instructions" className={styles.portraitHint}>
@@ -172,13 +174,17 @@ export default function Hero() {
           </p>
           <div className={styles.bottom}>
             <a className={styles.nextMatch} href={nextMatch.sourceUrl} target="_blank" rel="noreferrer">
-              <span>NEXT MATCH ↗</span>
+              <span>NEXT MATCH <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true"><path d="M4 12 12 4M4 4h8v8" /></svg></span>
               <span>{nextMatch.opponent} <i>·</i> <time dateTime={nextMatch.dateTime}>{nextMatch.date}</time></span>
             </a>
-            <a className={styles.scrollCue} href="#signature" aria-label="Scroll to the signature" onClick={unlockPortrait}><span>SCROLL INTO THE STORY</span><i /></a>
+            <a className={styles.scrollCue} href={reduced ? "#gallery" : "#signature"} aria-label="Scroll into the story" onClick={unlockPortrait}><span>SCROLL INTO THE STORY</span><i /></a>
           </div>
         </div>
         <Signature />
+        <div className={styles.motionNotice} hidden={!reduced}>
+          <span>Reduced motion is on</span>
+          <button type="button" onClick={() => { unlockPortrait(); setPreference("full"); }}>Enable full experience</button>
+        </div>
       </div>
     </section>
   );

@@ -1,4 +1,4 @@
-// Placeholder copy from RADONJA-BRIEF.md. Replace when Radonja's words arrive.
+// Placeholder copy from RADONJA-BRIEF.md. Replace when Andrija's words arrive.
 export const quote = {
   text: "It doesn't matter where you start — it's what you do with the minutes nobody sees.",
   keyword: "minutes",

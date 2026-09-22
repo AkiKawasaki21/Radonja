@@ -5,4 +5,4 @@
 .bottom { position: absolute; bottom: 40px; font-family: var(--font-bebas), sans-serif; font-size: 15px; letter-spacing: .15em; }
 :global(html[data-radonja-seen="true"]) .loader { display: none; }
 @keyframes failOpen { to { visibility: hidden; } }
-@media (prefers-reduced-motion: reduce) { .loader { display: none; } }
+:global(html[data-motion="reduced"]) .loader { display: none; }

@@ -1,5 +1,5 @@
 export const profile = {
-  name: "Radonja",
+  name: "Andrija Radonjic",
   origin: "Montenegro",
   destination: "America",
   introduction: "Home is where his story starts.",
@@ -7,7 +7,7 @@ export const profile = {
     {
       number: "01",
       title: "The beginning",
-      text: "Radonja grew up in Montenegro, inspired by his grandfather, Mojas Radonjic. That influence remains an important part of the person behind the player.",
+      text: "Andrija Radonjic grew up in Montenegro, inspired by his grandfather, Mojas Radonjic. That influence remains an important part of the person behind the player.",
     },
     {
       number: "02",

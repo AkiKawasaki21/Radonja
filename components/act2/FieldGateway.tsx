@@ -12,6 +12,14 @@ import styles from "./FieldGateway.module.css";
 
 type FieldView = "on-field" | "off-field";
 
+function ArrowUpRight({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <path d="M5 19 19 5M5 5h14v14" />
+    </svg>
+  );
+}
+
 export default function FieldGateway() {
   const [activeView, setActiveView] = useState<FieldView | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -59,28 +67,28 @@ export default function FieldGateway() {
   return (
     <section id="beyond-the-frame" className={styles.section} aria-labelledby="field-gateway-title">
       <h2 id="field-gateway-title" className={styles.screenReaderOnly}>On the field. Off the field.</h2>
-      <div className={styles.sectionLabel}><span>04 / TWO SIDES</span><span>Nº 15 · RADONJA</span></div>
+      <div className={styles.sectionLabel}><span>04 / TWO SIDES</span><span>Nº 15 · ANDRIJA RADONJIC</span></div>
 
       <div className={styles.panels}>
         <button className={`${styles.panel} ${styles.onField}`} type="button" onClick={(event) => openView("on-field", event)} aria-label="Open the on-field film room" aria-haspopup="dialog">
-          <Image src={actionPhoto} alt="" fill placeholder="blur" sizes="(max-width: 767px) 100vw, 50vw" quality={75} className={styles.panelPhoto} />
+          <Image src={actionPhoto} alt="" fill placeholder="blur" sizes="50vw" quality={75} className={styles.panelPhoto} />
           <span className={styles.panelShade} aria-hidden="true" />
           <span className={styles.panelNumber} aria-hidden="true">01</span>
           <span className={styles.panelCopy}>
             <span className={styles.panelEyebrow}>THE GAME, FRAME BY FRAME</span>
             <span className={styles.panelTitle}>ON THE<br />FIELD<span>.</span></span>
-            <span className={styles.panelLink}>ENTER THE FILM ROOM <span aria-hidden="true">↗</span></span>
+            <span className={styles.panelLink}>ENTER THE FILM ROOM <ArrowUpRight /></span>
           </span>
         </button>
 
-        <button className={`${styles.panel} ${styles.offField}`} type="button" onClick={(event) => openView("off-field", event)} aria-label="Read Radonja’s off-field story" aria-haspopup="dialog">
-          <Image src={portraitPhoto} alt="" fill placeholder="blur" sizes="(max-width: 767px) 100vw, 50vw" quality={75} className={styles.panelPhoto} />
+        <button className={`${styles.panel} ${styles.offField}`} type="button" onClick={(event) => openView("off-field", event)} aria-label="Read Andrija Radonjic’s off-field story" aria-haspopup="dialog">
+          <Image src={portraitPhoto} alt="" fill placeholder="blur" sizes="50vw" quality={75} className={styles.panelPhoto} />
           <span className={styles.panelShade} aria-hidden="true" />
           <span className={styles.panelNumber} aria-hidden="true">02</span>
           <span className={styles.panelCopy}>
             <span className={styles.panelEyebrow}>THE PERSON BEHIND THE NUMBER</span>
             <span className={styles.panelTitle}>OFF THE<br />FIELD<span>.</span></span>
-            <span className={styles.panelLink}>READ HIS STORY <span aria-hidden="true">↗</span></span>
+            <span className={styles.panelLink}>READ HIS STORY <ArrowUpRight /></span>
           </span>
         </button>
       </div>
@@ -124,7 +132,7 @@ export default function FieldGateway() {
                         <button type="button" className={styles.clipButton} aria-pressed={selectedIndex === index} aria-label={`Select ${clip.title}, video coming soon`} onClick={() => setSelectedIndex(index)}>
                           <span className={styles.clipNumber} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
                           <span className={styles.clipText}><span>{clip.title}</span><small>{clip.status}</small></span>
-                          <span className={styles.clipMark} aria-hidden="true">↗</span>
+                          <ArrowUpRight className={styles.clipMark} />
                         </button>
                       </li>
                     ))}
@@ -136,7 +144,7 @@ export default function FieldGateway() {
             {activeView === "off-field" && (
               <article className={styles.story}>
                 <div className={styles.storyPortrait}>
-                  <Image src={storyPhoto} alt="Radonja walking across the pitch at dusk" fill placeholder="blur" sizes="(max-width: 767px) 90vw, 38vw" className={styles.storyImage} />
+                  <Image src={storyPhoto} alt="Andrija Radonjic walking across the pitch at dusk" fill placeholder="blur" sizes="(max-width: 767px) 90vw, 38vw" className={styles.storyImage} />
                   <p>{profile.origin} <span aria-hidden="true">→</span> {profile.destination}</p>
                 </div>
                 <div className={styles.storyCopy}>

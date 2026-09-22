@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import Image from 'next/image';
 import { gallery, type GalleryPhoto } from '@/content/gallery';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
+import { useMotionPreference } from '@/lib/motion-preference';
 import styles from './HorizontalGallery.module.css';
 
 const entranceDuration = 0.1;
@@ -24,6 +25,7 @@ function PhotoImage({ photo }: { photo: GalleryPhoto }) {
 }
 
 export default function HorizontalGallery() {
+  const { reduced } = useMotionPreference();
   const [loadImages, setLoadImages] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -57,8 +59,7 @@ export default function HorizontalGallery() {
     media.add({
       desktop: '(min-width: 768px)',
       mobile: '(max-width: 767px)',
-      reduced: '(prefers-reduced-motion: reduce)',
-    }, (context) => {
+    }, () => {
       const distance = () => Math.max(0, track.scrollWidth - scroller.clientWidth);
       const cardPositions = () => Array.from(track.children).map((child) => {
         const card = child as HTMLElement;
@@ -73,7 +74,7 @@ export default function HorizontalGallery() {
         return positions.reverse().find((position) => position < current - 8) ?? 0;
       };
 
-      if (context.conditions?.reduced) {
+      if (reduced) {
         scroller.setAttribute('data-lenis-prevent', '');
         const updateProgress = () => {
           if (progressRef.current) progressRef.current.style.transform = `scaleX(${distance() ? scroller.scrollLeft / distance() : 1})`;
@@ -171,12 +172,12 @@ export default function HorizontalGallery() {
       active = false;
       media.revert();
     };
-  }, []);
+  }, [reduced]);
 
   return (
     <section ref={sectionRef} id="gallery" className={styles.section} aria-labelledby="gallery-title">
       <noscript>
-        <style>{`.${styles.section}{height:auto;margin-top:0;background:var(--color-carbon)}.${styles.inner}{height:auto;min-height:100svh;--gallery-backdrop:1}.${styles.scroller}{overflow-x:auto}.${styles.track}{height:74svh;padding-left:5vw}.${styles.photoCard}{margin-top:0}.${styles.landscape}{display:none}`}</style>
+        <style>{`.${styles.section}{height:auto;margin-top:0;background:var(--color-carbon)}.${styles.inner}{height:auto;min-height:0;--gallery-backdrop:1}.${styles.scroller}{overflow-x:auto}.${styles.track}{height:auto;padding-left:5vw}.${styles.photoCard}{margin-top:0}.${styles.landscape}{display:none}`}</style>
       </noscript>
       <div ref={innerRef} className={styles.inner}>
         <div ref={landscapeRef} className={styles.landscape} aria-hidden="true">
@@ -188,17 +189,19 @@ export default function HorizontalGallery() {
 
         <header className={styles.header}>
           <div>
-            <p className={styles.eyebrow}>03 / THE ARCHIVE</p>
+            <p className={styles.eyebrow}>02 / THE ARCHIVE</p>
             <h2 id="gallery-title" className={styles.title}>THE GAME, IN FRAMES<span>.</span></h2>
           </div>
           <p className={styles.guide} aria-hidden="true">
             <span className={styles.scrollHint}>SCROLL DOWN. LOOK AROUND.</span>
             <span className={styles.swipeHint}>SWIPE TO EXPLORE</span>
-            <span className={styles.arrow}>↘</span>
+            <svg className={styles.arrow} viewBox="0 0 24 24" fill="none" focusable="false" aria-hidden="true">
+              <path d="M5 5 19 19M7 19h12V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square" />
+            </svg>
           </p>
         </header>
 
-        <p id="gallery-instructions" className={styles.screenReaderOnly}>Scroll down to move through the photographs. You can also focus this gallery and use the left and right arrow keys, Home, or End. With reduced motion, swipe or scroll horizontally.</p>
+        <p id="gallery-instructions" className={styles.screenReaderOnly}>{reduced ? 'Swipe or scroll horizontally to explore the photographs.' : 'Scroll down to move through the photographs.'} You can also focus this gallery and use the left and right arrow keys, Home, or End.</p>
         <div ref={scrollerRef} className={styles.scroller} role="region" tabIndex={0} aria-label="Photographs and quotes from the pitch" aria-describedby="gallery-instructions">
           <div ref={trackRef} className={styles.track}>
             {gallery.map((item) => item.kind === 'photo' ? (

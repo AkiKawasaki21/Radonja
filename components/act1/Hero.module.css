@@ -4,12 +4,12 @@
 .portraitSurface { position: absolute; inset: 0; border: 0; padding: 0; background: var(--color-carbon); overflow: hidden; cursor: default; touch-action: pan-y pinch-zoom; perspective: 1500px; }
 .portraitSurface:focus-visible { outline-offset: -8px; }
 .portraitSurface[data-portrait-locked="true"] { touch-action: none; }
-.exploreControl { position: absolute; top: 94px; right: 6vw; z-index: 5; display: flex; flex-direction: column; align-items: flex-end; gap: 9px; }
+.exploreControl { position: absolute; top: calc(86px + env(safe-area-inset-top, 0px)); right: 6vw; z-index: 5; display: flex; flex-direction: column; align-items: flex-end; gap: 9px; }
 .exploreLock { min-height: 44px; display: flex; align-items: center; gap: 9px; padding: 10px 13px; border: 1px solid rgb(201 166 70 / 65%); border-radius: 2px; background: rgb(11 11 12 / 86%); color: var(--color-bone); font-family: var(--font-bebas), sans-serif; font-size: 15px; line-height: 1; letter-spacing: .07em; }
 .exploreLock[aria-pressed="true"] { background: var(--color-gold); color: var(--color-carbon); border-color: var(--color-gold); }
 .exploreLock svg { width: 18px; height: 18px; flex-shrink: 0; }
 .lockStatus { font-size: 9px; letter-spacing: .015em; color: rgb(242 237 228 / 78%); }
-.plane { position: absolute; width: max(112%, 104svh); aspect-ratio: 1122 / 1402; left: 50%; top: 50%; translate: -44% -48%; transform-style: preserve-3d; will-change: transform; }
+.plane { position: absolute; width: max(112%, 116svh); aspect-ratio: 1122 / 1402; left: 50%; top: 50%; translate: -44% -53%; transform-style: preserve-3d; will-change: transform; }
 .basePhoto { object-fit: fill; }
 .reveal { position: absolute; inset: 0; opacity: 0; pointer-events: none; clip-path: url(#portrait-sweep); }
 .reveal[data-full="true"] { clip-path: none; }
@@ -18,21 +18,23 @@
 .filterDefinitions { position: absolute; width: 0; height: 0; pointer-events: none; }
 .hiddenPhoto { object-fit: fill; }
 .shade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(0deg, rgb(11 11 12 / 94%), transparent 36%), linear-gradient(180deg, rgb(11 11 12 / 50%), transparent 22%), linear-gradient(90deg, rgb(11 11 12 / 22%), transparent 30%, transparent 75%, rgb(11 11 12 / 25%)); }
-.masthead { position: absolute; inset: 24px 6vw auto; display: flex; align-items: flex-start; justify-content: space-between; pointer-events: none; }
+.masthead { position: absolute; inset: calc(24px + env(safe-area-inset-top, 0px)) 6vw auto; display: flex; align-items: flex-start; justify-content: space-between; pointer-events: none; }
 .monogram { pointer-events: auto; text-decoration: none; font-family: var(--font-anton), sans-serif; font-size: 40px; letter-spacing: -.05em; line-height: 1; }
 .monogram span { display: block; height: 4px; width: 23px; background: var(--color-bone); margin-top: 8px; transform: rotate(-6deg); }
 .location { font-family: var(--font-bebas), sans-serif; font-size: 11px; letter-spacing: .1em; padding-top: 5px; }
 .location i { font-style: normal; padding: 0 5px; }
-.titleBlock { position: absolute; bottom: 14.5%; left: 0; width: 100%; display: flex; align-items: center; flex-direction: column; pointer-events: none; }
+.titleBlock { position: absolute; bottom: max(14%, calc(94px + env(safe-area-inset-bottom, 0px))); left: 0; width: 100%; display: flex; align-items: center; flex-direction: column; pointer-events: none; }
 .eyebrow { font-family: var(--font-bebas), sans-serif; font-size: 14px; letter-spacing: .15em; margin: 0 0 10px; }
-.titleBlock h1 { font-family: var(--font-anton), sans-serif; font-size: clamp(68px, 20vw, 180px); font-weight: 400; line-height: .94; letter-spacing: -.025em; margin: 0; }
+.titleBlock h1 { font-family: var(--font-anton), sans-serif; font-size: clamp(54px, 17.7vw, 150px); font-weight: 400; line-height: .94; letter-spacing: -.025em; margin: 0; }
+.firstName { display: block; margin-bottom: 9px; font-family: var(--font-instrument-serif), serif; font-size: .39em; font-style: italic; font-weight: 400; letter-spacing: .025em; }
 .tape { width: 48px; height: 5px; background: var(--color-gold); transform: rotate(-4deg); margin-top: 17px; }
 .portraitHint { position: absolute; top: 27%; right: 5.2vw; writing-mode: vertical-rl; font-size: 8px; letter-spacing: .17em; color: rgb(242 237 228 / 72%); pointer-events: none; }
 .mouseHint { display: none; }
-.bottom { position: absolute; left: 6vw; right: 6vw; bottom: 26px; display: flex; justify-content: space-between; align-items: flex-end; gap: 18px; }
+.bottom { position: absolute; left: 6vw; right: 6vw; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: space-between; align-items: flex-end; gap: 18px; }
 .nextMatch { display: flex; flex-direction: column; text-decoration: none; gap: 6px; }
 .nextMatch > span:first-child { font-size: 8px; letter-spacing: .15em; color: rgb(242 237 228 / 68%); }
 .nextMatch > span:last-child { font-family: var(--font-bebas), sans-serif; font-size: 13px; letter-spacing: .04em; }
+.nextMatch svg { width: 11px; height: 11px; vertical-align: -2px; }
 .nextMatch i { padding: 0 4px; font-style: normal; }
 .scrollCue { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; padding: 12px 0 5px 12px; text-decoration: none; }
 .scrollCue span { display: none; font-size: 8px; letter-spacing: .12em; }
@@ -48,14 +50,14 @@
 @media (min-width: 768px) and (pointer: fine) { .exploreControl { display: none; } }
 @media (min-width: 768px) {
   .story { height: 320svh; }
-  .masthead { inset: 32px 3.6vw auto; }
+  .masthead { inset: calc(32px + env(safe-area-inset-top, 0px)) 3.6vw auto; }
   .monogram { font-size: 52px; }
   .location { font-size: 13px; }
   .titleBlock { bottom: 10%; }
   .titleBlock h1 { font-size: clamp(72px, 8vw, 116px); }
   .eyebrow { font-size: 17px; margin-bottom: 12px; }
   .tape { width: 72px; height: 7px; margin-top: 20px; }
-  .bottom { left: 3.6vw; right: 3.6vw; bottom: 30px; }
+  .bottom { left: 3.6vw; right: 3.6vw; bottom: calc(30px + env(safe-area-inset-bottom, 0px)); }
   .nextMatch > span:last-child { font-size: 17px; }
   .scrollCue span { display: block; }
   .scrollCue i { width: 43px; }
@@ -63,12 +65,15 @@
   .plane { translate: -44% -49%; }
 }
 @media (min-aspect-ratio: 2 / 1) { .titleBlock h1 { font-size: min(14vw, 22svh); } .titleBlock { bottom: 14%; } .eyebrow { font-size: 15px; } }
-@media (prefers-reduced-motion: reduce) {
-  .story { height: auto; }
-  .stage { height: auto; overflow: hidden; }
-  .frame { position: relative; height: 100svh; will-change: auto; }
-  .plane { will-change: auto; }
-  .atmosphere { display: none; }
-  .signatureAnchor { top: 100svh; }
-  .scrollCue i { animation: none; }
-}
+.motionNotice { position: absolute; z-index: 8; top: calc(158px + env(safe-area-inset-top, 0px)); right: 6vw; display: flex; flex-direction: column; align-items: flex-end; gap: 5px; padding: 10px 12px; border-left: 2px solid var(--color-gold); background: rgb(11 11 12 / 90%); }
+.motionNotice[hidden] { display: none; }
+.motionNotice > span { color: rgb(242 237 228 / 70%); font-size: 10px; }
+.motionNotice button { min-height: 38px; padding: 6px 0; border: 0; background: none; color: var(--color-gold); font-family: var(--font-bebas), sans-serif; font-size: 16px; letter-spacing: .04em; cursor: pointer; }
+:global(html[data-motion="reduced"]) .story { height: auto; }
+:global(html[data-motion="reduced"]) .stage { height: 100svh; }
+:global(html[data-motion="reduced"]) .frame { will-change: auto; }
+:global(html[data-motion="reduced"]) .plane { will-change: auto; }
+:global(html[data-motion="reduced"]) .atmosphere { display: none; }
+:global(html[data-motion="reduced"]) .signatureAnchor { top: 75svh; }
+:global(html[data-motion="reduced"]) .scrollCue i { animation: none; }
+@media (min-width: 768px) { .motionNotice { top: calc(96px + env(safe-area-inset-top, 0px)); right: 3.6vw; } }

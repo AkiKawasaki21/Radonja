@@ -31,6 +31,7 @@
 
 * { box-sizing: border-box; }
 body { margin: 0; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 button, a { -webkit-tap-highlight-color: transparent; }
 button { font: inherit; }
 a { color: inherit; }
@@ -39,6 +40,4 @@ button, a { touch-action: manipulation; }
 :focus-visible { outline: 2px solid var(--color-gold); outline-offset: 7px; }
 .skip-link { position: fixed; top: 16px; left: 16px; z-index: 200; padding: 12px 20px; background: var(--color-bone); color: var(--color-carbon); transform: translateY(-200%); }
 .skip-link:focus { transform: translateY(0); }
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
-}
+html[data-motion="reduced"] *, html[data-motion="reduced"] *::before, html[data-motion="reduced"] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

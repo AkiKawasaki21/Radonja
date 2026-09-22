@@ -3,6 +3,7 @@ import Hero from "@/components/act1/Hero";
 import Quote from "@/components/act1/Quote";
 import HorizontalGallery from "@/components/act1/HorizontalGallery";
 import FieldGateway from "@/components/act2/FieldGateway";
+import MotionControl from "@/components/MotionControl";
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
         <Quote />
         <FieldGateway />
       </main>
+      <MotionControl />
     </>
   );
 }

@@ -1,9 +1,8 @@
 .signature { position: absolute; inset: 0; z-index: 3; opacity: 0; color: var(--color-gold); pointer-events: none; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-.label { position: absolute; top: 9%; color: var(--color-bone); font-family: var(--font-bebas), sans-serif; font-size: 12px; letter-spacing: .18em; font-weight: 400; }
+.label { position: absolute; top: max(9%, calc(30px + env(safe-area-inset-top, 0px))); color: var(--color-bone); font-family: var(--font-bebas), sans-serif; font-size: 12px; letter-spacing: .18em; font-weight: 400; }
 .signature svg { width: min(112vw, 1160px); flex-shrink: 0; overflow: visible; transform: rotate(-12deg); }
-.caption { position: absolute; bottom: 9%; margin: 0; color: var(--color-bone); font-family: var(--font-bebas), sans-serif; font-size: 11px; letter-spacing: .15em; }
-@media (min-width: 768px) { .label { font-size: 14px; top: 8%; } .caption { font-size: 13px; bottom: 9%; } .signature svg { width: min(84vw, 1220px); } }
-@media (prefers-reduced-motion: reduce) {
-  .signature { position: relative; min-height: 60svh; padding: 100px 0; opacity: 1; }
-  .signature svg { width: min(94vw, 960px); }
-}
+.caption { position: absolute; bottom: max(9%, calc(26px + env(safe-area-inset-bottom, 0px))); margin: 0; color: var(--color-bone); font-family: var(--font-bebas), sans-serif; font-size: 11px; letter-spacing: .15em; }
+@media (min-width: 768px) { .label { font-size: 14px; top: 8%; } .caption { font-size: 13px; bottom: max(9%, calc(26px + env(safe-area-inset-bottom, 0px))); } .signature svg { width: min(84vw, 1220px); } }
+:global(html[data-motion="reduced"]) .signature { position: absolute; inset: 0; opacity: 1; }
+:global(html[data-motion="reduced"]) .signature svg { width: min(88vw, 940px); transform: translateY(1svh) rotate(-12deg); }
+:global(html[data-motion="reduced"]) .label, :global(html[data-motion="reduced"]) .caption { display: none; }

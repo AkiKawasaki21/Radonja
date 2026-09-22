@@ -15,15 +15,15 @@
   letter-spacing: 0.13em;
 }
 
-.sectionLabel span:last-child { color: var(--color-gold); }
-.panels { display: grid; gap: 2px; }
+.sectionLabel span:last-child { color: var(--color-gold); text-align: right; }
+.panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; }
 
 .panel {
   position: relative;
   isolation: isolate;
-  min-height: 70svh;
+  min-height: max(440px, 70svh);
   width: 100%;
-  padding: 32px 7vw;
+  padding: 26px 3vw;
   overflow: hidden;
   border: 0;
   background: var(--color-graphite);
@@ -37,19 +37,22 @@
 .onField .panelPhoto { object-position: 35% 40%; }
 .offField .panelPhoto { object-position: 62% 25%; }
 .panelShade { position: absolute; z-index: -1; inset: 0; pointer-events: none; background: linear-gradient(0deg, rgb(11 11 12 / 92%), rgb(11 11 12 / 15%) 63%, rgb(11 11 12 / 20%)); }
-.panelNumber { position: absolute; top: 30px; left: 7vw; font-family: var(--font-bebas), sans-serif; font-size: 15px; letter-spacing: 0.1em; }
-.panelCopy { position: absolute; inset: auto 7vw 36px; display: flex; flex-direction: column; align-items: flex-start; }
-.panelEyebrow { margin-bottom: 15px; font-family: var(--font-bebas), sans-serif; font-size: 12px; letter-spacing: 0.11em; }
-.panelTitle { font-family: var(--font-anton), sans-serif; font-size: clamp(56px, 16vw, 104px); font-weight: 400; line-height: 0.99; letter-spacing: -0.025em; }
+.panelNumber { position: absolute; top: 26px; left: max(12px, 3vw); font-family: var(--font-bebas), sans-serif; font-size: 15px; letter-spacing: 0.1em; }
+.panelCopy { position: absolute; inset: auto max(12px, 3vw) 26px; display: flex; flex-direction: column; align-items: flex-start; }
+.onField .panelCopy { align-items: flex-end; text-align: right; }
+.panelEyebrow { min-height: 2.5em; margin-bottom: 12px; font-family: var(--font-bebas), sans-serif; font-size: clamp(10px, 2.5vw, 12px); line-height: 1.25; letter-spacing: 0.09em; }
+.panelTitle { font-family: var(--font-anton), sans-serif; font-size: clamp(34px, 9.7vw, 74px); font-weight: 400; line-height: 0.99; letter-spacing: -0.025em; }
 .panelTitle > span { color: var(--color-gold); }
-.panelLink { display: flex; align-items: center; gap: 30px; margin-top: 25px; padding-bottom: 7px; border-bottom: 2px solid var(--color-gold); font-family: var(--font-bebas), sans-serif; font-size: 14px; letter-spacing: 0.1em; }
-.panelLink > span { font-family: var(--font-instrument-sans), sans-serif; font-size: 22px; line-height: 1; }
+.panelLink { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; max-width: 100%; margin-top: 18px; padding-bottom: 7px; border-bottom: 2px solid var(--color-gold); font-family: var(--font-bebas), sans-serif; font-size: clamp(11px, 2.8vw, 14px); line-height: 1.25; letter-spacing: 0.06em; }
+.panelLink > svg { width: 18px; height: 18px; flex: 0 0 18px; }
 
 .dialog {
   width: 100%;
   max-width: none;
   height: 100svh;
   max-height: 100svh;
+  height: 100dvh;
+  max-height: 100dvh;
   margin: auto;
   padding: 0;
   border: 1px solid var(--color-graphite);
@@ -59,7 +62,7 @@
 }
 
 .dialog::backdrop { background: rgb(11 11 12 / 87%); }
-.dialogShell { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.dialogShell { display: flex; flex-direction: column; height: 100%; min-height: 0; box-sizing: border-box; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
 .dialogHeader { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 20px; padding: 24px 6vw 22px; border-bottom: 1px solid rgb(242 237 228 / 15%); }
 .dialogEyebrow { margin: 0 0 7px; color: var(--color-gold); font-family: var(--font-bebas), sans-serif; font-size: 11px; letter-spacing: 0.13em; }
 .dialogHeader h2 { margin: 0; font-family: var(--font-bebas), sans-serif; font-size: clamp(30px, 6vw, 46px); font-weight: 400; line-height: 1; }
@@ -85,7 +88,7 @@
 .clipText { display: flex; flex: 1; flex-direction: column; gap: 6px; }
 .clipText > span { font-family: var(--font-bebas), sans-serif; font-size: 23px; line-height: 1; letter-spacing: 0.025em; }
 .clipText small { color: rgb(242 237 228 / 55%); font-size: 10px; line-height: 1; }
-.clipMark { opacity: 0; font-size: 20px; }
+.clipMark { opacity: 0; width: 20px; height: 20px; flex: 0 0 20px; }
 .clipButton[aria-pressed='true'] .clipNumber, .clipButton[aria-pressed='true'] .clipText > span { color: var(--color-gold); }
 .clipButton[aria-pressed='true'] .clipMark { opacity: 1; color: var(--color-gold); }
 
@@ -112,7 +115,9 @@
   .panelNumber { top: 35px; left: 4vw; }
   .panelCopy { inset: auto 4vw 48px; }
   .panelTitle { font-size: clamp(64px, 7.2vw, 135px); }
-  .panelEyebrow { font-size: 13px; }
+  .panelEyebrow { min-height: 0; font-size: 13px; margin-bottom: 15px; }
+  .panelLink { gap: 30px; margin-top: 25px; font-size: 14px; letter-spacing: 0.1em; }
+  .panelLink > svg { width: 22px; height: 22px; flex-basis: 22px; }
   .onField .panelPhoto { object-position: 20% center; }
   .offField .panelPhoto { object-position: 75% center; }
   .onField .panelCopy { align-items: flex-end; text-align: right; }
@@ -137,7 +142,5 @@
   .clipButton:hover .clipText > span { color: var(--color-gold); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .panelPhoto { transition: none; }
-  .panel:hover .panelPhoto { transform: none; }
-}
+:global(html[data-motion='reduced']) .panelPhoto { transition: none; }
+:global(html[data-motion='reduced']) .panel:hover .panelPhoto { transform: none; }

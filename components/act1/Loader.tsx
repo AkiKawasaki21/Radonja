@@ -2,23 +2,31 @@
 
 import { useEffect, useRef, useState } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
+import { useMotionPreference } from "@/lib/motion-preference";
 import styles from "./Loader.module.css";
 
 const SESSION_KEY = "radonja:act1:seen";
 
 export default function Loader() {
+  const { reduced } = useMotionPreference();
   const [visible, setVisible] = useState(true);
+  const started = useRef(false);
   const overlay = useRef<HTMLDivElement>(null);
   const band = useRef<HTMLDivElement>(null);
   const numeral = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
+    if (!visible) return;
     let seen = false;
     try { seen = sessionStorage.getItem(SESSION_KEY) === "1"; } catch { /* Storage can be disabled. */ }
-    if (seen || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (seen || reduced) {
+      if (reduced && started.current) {
+        try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* Loading still works without storage. */ }
+      }
       setVisible(false);
       return;
     }
+    started.current = true;
 
     let disposed = false;
     let exiting = false;
@@ -77,27 +85,15 @@ export default function Loader() {
     void document.fonts.ready.then(advance);
     // Slow or failed assets must never trap the visitor. Do not fake 100% at the deadline.
     const deadline = setTimeout(() => finish(false), 1200);
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const onMotionChange = () => {
-      if (!motion.matches) return;
-      exiting = true;
-      clearTimeout(deadline);
-      clearTimeout(finishTimer);
-      timeline?.kill();
-      gsap.killTweensOf([bandElement, numeralElement, progress]);
-      hide();
-    };
-    motion.addEventListener("change", onMotionChange);
     return () => {
       disposed = true;
       clearTimeout(deadline);
       clearTimeout(finishTimer);
       listeners.forEach((remove) => remove());
-      motion.removeEventListener("change", onMotionChange);
       timeline?.kill();
       gsap.killTweensOf([bandElement, numeralElement, progress]);
     };
-  }, []);
+  }, [reduced, visible]);
 
   if (!visible) return null;
   return (
@@ -105,7 +101,7 @@ export default function Loader() {
       <span className={styles.label}>MONTENEGRO → CALIFORNIA</span>
       <span ref={numeral} className={styles.numeral}>00</span>
       <div ref={band} className={styles.band} />
-      <span className={styles.bottom}>RADONJA / Nº 15</span>
+      <span className={styles.bottom}>ANDRIJA RADONJIC / Nº 15</span>
     </div>
   );
 }

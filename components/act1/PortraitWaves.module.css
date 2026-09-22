@@ -62,8 +62,7 @@
 
 :global([data-wave-active="false"]) .ambient { animation-play-state: paused; }
 
-@media (prefers-reduced-motion: reduce) {
-  .base { opacity: 0.3; }
-  .response, .ambient { animation: none; transform: none; }
-  .accent { display: none; }
-}
+:global(html[data-motion="reduced"]) .base { opacity: 0.3; }
+:global(html[data-motion="reduced"]) .response,
+:global(html[data-motion="reduced"]) .ambient { animation: none; transform: none; }
+:global(html[data-motion="reduced"]) .accent { display: none; }

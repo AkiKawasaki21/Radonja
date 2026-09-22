@@ -4,19 +4,21 @@ import Image from "next/image";
 import { useLayoutEffect, useRef } from "react";
 import { quote } from "@/content/quote";
 import { gsap, SplitText } from "@/lib/gsap";
+import { useMotionPreference } from "@/lib/motion-preference";
 import backPhoto from "@/public/photos/back-15.jpg";
 import styles from "./Quote.module.css";
 
 export default function Quote() {
+  const { reduced } = useMotionPreference();
   const sectionRef = useRef<HTMLElement>(null);
   const textRef = useRef<HTMLQuoteElement>(null);
   const photoRef = useRef<HTMLDivElement>(null);
   const [beforeKeyword, afterKeyword] = quote.text.split(quote.keyword);
 
   useLayoutEffect(() => {
-    const media = gsap.matchMedia();
+    if (reduced) return;
 
-    media.add("(prefers-reduced-motion: no-preference)", () => {
+    const context = gsap.context(() => {
       const split = SplitText.create(textRef.current!, {
         type: "lines",
         mask: "lines",
@@ -54,10 +56,10 @@ export default function Quote() {
       );
 
       return () => split.revert();
-    });
+    }, sectionRef);
 
-    return () => media.revert();
-  }, []);
+    return () => context.revert();
+  }, [reduced]);
 
   return (
     <section
@@ -80,7 +82,7 @@ export default function Quote() {
 
       <div className={styles.content}>
         <h2 id="quote-title" className={styles.label}>
-          <span>02</span> THE MINDSET
+          <span>03</span> THE MINDSET
         </h2>
         <span className={styles.quotationMark} aria-hidden="true">
           “
@@ -92,7 +94,7 @@ export default function Quote() {
         </blockquote>
         <div className={styles.attribution}>
           <span className={styles.band} aria-hidden="true" />
-          RADONJA / Nº 15
+          ANDRIJA RADONJIC / Nº15
         </div>
       </div>
     </section>
