@@ -1,0 +1,69 @@
+.waves {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  /* Keep the eyes, nose, and mouth clear while the current flows around the head. */
+  mask-image: radial-gradient(ellipse 19% 15% at 44% 45%, transparent 0 90%, #000 100%);
+  mask-repeat: no-repeat;
+}
+
+.base,
+.accent,
+.response,
+.ambient {
+  position: absolute;
+  inset: 0;
+}
+
+.base {
+  opacity: calc(0.3 + var(--wave-energy, 0) * 0.16);
+}
+
+.response {
+  transform: translate3d(calc(var(--wave-x, 0px) * 0.28), calc(var(--wave-y, 0px) * 0.28), 0)
+    rotate(calc(var(--wave-energy, 0) * 1.2deg));
+  transform-origin: 44% 45%;
+}
+
+.ambient {
+  inset: -3%;
+  animation: current 17s ease-in-out infinite alternate;
+  transform-origin: 44% 45%;
+}
+
+.contours {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  stroke: var(--color-gold, #c9a646);
+  stroke-width: 1.15px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.contours path { vector-effect: non-scaling-stroke; }
+.boneLine { stroke: var(--color-bone, #f2ede4); }
+
+.accent {
+  background: rgb(201 166 70 / 10%);
+  opacity: calc(0.5 + var(--wave-energy, 0) * 0.42);
+}
+
+.accent .contours { stroke-width: 1.7px; }
+.accent .boneLine { opacity: 0.8; }
+
+@keyframes current {
+  0% { transform: translate3d(-1.5%, 1%, 0) rotate(-1deg) scale(1.015); }
+  48% { transform: translate3d(1.25%, -1.5%, 0) rotate(0.8deg) scale(1.025); }
+  100% { transform: translate3d(2%, 1.3%, 0) rotate(1.4deg) scale(1.01); }
+}
+
+:global([data-wave-active="false"]) .ambient { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .base { opacity: 0.3; }
+  .response, .ambient { animation: none; transform: none; }
+  .accent { display: none; }
+}

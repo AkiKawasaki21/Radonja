@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import Image from 'next/image';
 import { gallery, type GalleryPhoto } from '@/content/gallery';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import styles from './HorizontalGallery.module.css';
+
+const entranceDuration = 0.1;
 
 function PhotoImage({ photo }: { photo: GalleryPhoto }) {
   return (
@@ -14,8 +16,8 @@ function PhotoImage({ photo }: { photo: GalleryPhoto }) {
       fill
       placeholder="blur"
       quality={75}
-      sizes={photo.index === 1 ? '(max-width: 767px) 85vw, 48vw' : '(max-width: 767px) 78vw, 34vw'}
-      className={`${styles.image} ${photo.index === 10 ? styles.flagImage : ''}`}
+      sizes={photo.index === 1 || photo.index === 3 || photo.index === 8 ? '(max-width: 767px) 82vw, 40vw' : '(max-width: 767px) 76vw, 30vw'}
+      className={styles.image}
       draggable={false}
     />
   );
@@ -28,11 +30,12 @@ export default function HorizontalGallery() {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLSpanElement>(null);
+  const landscapeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
-    // Native lazy loading starts too far ahead on mobile and competes with the hero.
+    // Keep the entire archive out of the hero's image-loading budget.
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
         setLoadImages(true);
@@ -51,9 +54,51 @@ export default function HorizontalGallery() {
     if (!section || !inner || !track || !scroller) return;
 
     const media = gsap.matchMedia();
-    media.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', () => {
+    media.add({
+      desktop: '(min-width: 768px)',
+      mobile: '(max-width: 767px)',
+      reduced: '(prefers-reduced-motion: reduce)',
+    }, (context) => {
+      const distance = () => Math.max(0, track.scrollWidth - scroller.clientWidth);
+      const cardPositions = () => Array.from(track.children).map((child) => {
+        const card = child as HTMLElement;
+        return Math.max(0, Math.min(distance(), card.offsetLeft - (scroller.clientWidth - card.offsetWidth) / 2));
+      });
+
+      const destination = (key: string, current: number) => {
+        const positions = cardPositions();
+        if (key === 'End') return distance();
+        if (key === 'Home') return 0;
+        if (key === 'ArrowRight') return positions.find((position) => position > current + 8) ?? distance();
+        return positions.reverse().find((position) => position < current - 8) ?? 0;
+      };
+
+      if (context.conditions?.reduced) {
+        scroller.setAttribute('data-lenis-prevent', '');
+        const updateProgress = () => {
+          if (progressRef.current) progressRef.current.style.transform = `scaleX(${distance() ? scroller.scrollLeft / distance() : 1})`;
+        };
+        const onKeyDown = (event: KeyboardEvent) => {
+          if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+          if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+          event.preventDefault();
+          scroller.scrollTo({ left: destination(event.key, scroller.scrollLeft), behavior: 'instant' });
+        };
+        scroller.addEventListener('scroll', updateProgress, { passive: true });
+        scroller.addEventListener('keydown', onKeyDown);
+        updateProgress();
+        return () => {
+          scroller.removeAttribute('data-lenis-prevent');
+          scroller.removeEventListener('scroll', updateProgress);
+          scroller.removeEventListener('keydown', onKeyDown);
+          if (progressRef.current) progressRef.current.style.removeProperty('transform');
+          scroller.scrollLeft = 0;
+        };
+      }
+
       const timeline = gsap.timeline({
         scrollTrigger: {
+          id: 'photo-landscape',
           trigger: inner,
           start: 'top top',
           end: () => `+=${section.offsetHeight - inner.offsetHeight}`,
@@ -65,44 +110,58 @@ export default function HorizontalGallery() {
         },
       });
 
+      // The first photograph rises from the lower-right into an open panorama.
+      timeline.fromTo(track,
+        { y: () => inner.offsetHeight * 0.16 },
+        { y: 0, duration: entranceDuration, ease: 'power1.out' },
+        0,
+      );
+      // The incoming photographs share the screen with the departing signature.
+      // Only establish the archive's opaque canvas once its own pin takes over.
+      timeline.fromTo(inner,
+        { '--gallery-backdrop': 0 },
+        { '--gallery-backdrop': 1, duration: 0.12, ease: 'none' },
+        0,
+      );
+      timeline.fromTo(inner.querySelectorAll('header, footer'),
+        { autoAlpha: 0 },
+        { autoAlpha: 1, duration: 0.065, ease: 'none' },
+        0.02,
+      );
+      // Let the signature caption pass before introducing the first frame's label.
+      timeline.fromTo(track.querySelector('[data-frame="1"] > p'),
+        { autoAlpha: 0 },
+        { autoAlpha: 0.65, duration: 0.035, ease: 'none' },
+        0.045,
+      );
+      timeline.fromTo(landscapeRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.12, ease: 'none' },
+        0,
+      );
       timeline.to(track, {
-        x: () => -Math.max(0, track.scrollWidth - window.innerWidth),
+        x: () => -distance(),
+        duration: 1 - entranceDuration,
         ease: 'none',
-      }, 0);
-      timeline.to(progressRef.current, { scaleX: 1, ease: 'none' }, 0);
+      }, entranceDuration);
+      timeline.to(landscapeRef.current, { xPercent: -12, duration: 1, ease: 'none' }, 0);
+      timeline.to(progressRef.current, { scaleX: 1, duration: 1, ease: 'none' }, 0);
 
       const onKeyDown = (event: KeyboardEvent) => {
         if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
         if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
         const trigger = timeline.scrollTrigger;
-        const distance = Math.max(0, track.scrollWidth - window.innerWidth);
-        if (!trigger || !distance) return;
+        if (!trigger || !distance()) return;
         event.preventDefault();
-
-        const cards = Array.from(track.children) as HTMLElement[];
-        const firstOffset = cards[0]?.offsetLeft ?? 0;
-        const positions = cards.map((card) => Math.min(distance, card.offsetLeft - firstOffset));
-        const currentOffset = trigger.progress * distance;
-        let targetOffset = 0;
-        if (event.key === 'End') targetOffset = distance;
-        if (event.key === 'ArrowRight') {
-          targetOffset = positions.find((position) => position > currentOffset + 4) ?? distance;
-        }
-        if (event.key === 'ArrowLeft') {
-          targetOffset = positions.reverse().find((position) => position < currentOffset - 4) ?? 0;
-        }
-        const targetScroll = trigger.start + (targetOffset / distance) * (trigger.end - trigger.start);
-        trigger.scroll(targetScroll);
+        const panProgress = Math.max(0, (trigger.progress - entranceDuration) / (1 - entranceDuration));
+        const target = destination(event.key, panProgress * distance());
+        const targetProgress = event.key === 'Home' ? 0 : entranceDuration + (target / distance()) * (1 - entranceDuration);
+        trigger.scroll(trigger.start + targetProgress * (trigger.end - trigger.start));
       };
       scroller.addEventListener('keydown', onKeyDown);
       return () => scroller.removeEventListener('keydown', onKeyDown);
     });
-    media.add('(max-width: 767px), (prefers-reduced-motion: reduce)', () => {
-      scroller.setAttribute('data-lenis-prevent', '');
-      return () => scroller.removeAttribute('data-lenis-prevent');
-    });
 
-    // Font metrics affect both the track width and its position after the quote.
     let active = true;
     document.fonts.ready.then(() => {
       if (active) ScrollTrigger.refresh();
@@ -117,35 +176,44 @@ export default function HorizontalGallery() {
   return (
     <section ref={sectionRef} id="gallery" className={styles.section} aria-labelledby="gallery-title">
       <noscript>
-        <style>{`.${styles.section}{height:auto}.${styles.inner}{height:auto}.${styles.scroller}{overflow-x:auto}.${styles.track}{height:min(68svh,620px)}`}</style>
+        <style>{`.${styles.section}{height:auto;margin-top:0;background:var(--color-carbon)}.${styles.inner}{height:auto;min-height:100svh;--gallery-backdrop:1}.${styles.scroller}{overflow-x:auto}.${styles.track}{height:74svh;padding-left:5vw}.${styles.photoCard}{margin-top:0}.${styles.landscape}{display:none}`}</style>
       </noscript>
       <div ref={innerRef} className={styles.inner}>
+        <div ref={landscapeRef} className={styles.landscape} aria-hidden="true">
+          <span className={styles.outlineNumber}>15</span>
+          <svg className={styles.contours} viewBox="0 0 1800 1000" fill="none" preserveAspectRatio="xMidYMid slice">
+            <path d="M-240 810C160 520 250 1040 630 715S1050-135 1490 160s615 65 740-130M-220 885C235 540 250 1110 680 795S1085-35 1450 235s610 90 825-90M-160 960C250 635 405 1120 710 895s480-880 855-585 650 125 730-70M-90 230C275-125 670 520 1040 265S1600 375 1830 650M-100 150C280-160 635 390 1070 160S1610 290 1930 595" />
+          </svg>
+        </div>
+
         <header className={styles.header}>
-          <div className={styles.headingGroup}>
+          <div>
             <p className={styles.eyebrow}>03 / THE ARCHIVE</p>
             <h2 id="gallery-title" className={styles.title}>THE GAME, IN FRAMES<span>.</span></h2>
           </div>
-          <div className={styles.guide} aria-hidden="true">
-            <span className={styles.desktopHint}>SCROLL TO EXPLORE</span>
-            <span className={styles.mobileHint}>SWIPE TO EXPLORE</span>
-            <span className={styles.arrow}>↗</span>
-          </div>
+          <p className={styles.guide} aria-hidden="true">
+            <span className={styles.scrollHint}>SCROLL DOWN. LOOK AROUND.</span>
+            <span className={styles.swipeHint}>SWIPE TO EXPLORE</span>
+            <span className={styles.arrow}>↘</span>
+          </p>
         </header>
 
-        <p id="gallery-instructions" className={styles.screenReaderOnly}>Use the left and right arrow keys, or scroll, to explore the gallery.</p>
+        <p id="gallery-instructions" className={styles.screenReaderOnly}>Scroll down to move through the photographs. You can also focus this gallery and use the left and right arrow keys, Home, or End. With reduced motion, swipe or scroll horizontally.</p>
         <div ref={scrollerRef} className={styles.scroller} role="region" tabIndex={0} aria-label="Photographs and quotes from the pitch" aria-describedby="gallery-instructions">
           <div ref={trackRef} className={styles.track}>
             {gallery.map((item) => item.kind === 'photo' ? (
-              <figure className={`${styles.photoCard} ${item.index === 1 ? styles.wideCard : ''}`} key={item.src.src}>
+              <figure
+                className={styles.photoCard}
+                data-frame={item.index}
+                key={item.src.src}
+                style={{ '--image-ratio': item.src.width / item.src.height } as CSSProperties}
+              >
+                <p className={styles.photoEyebrow}><span>{String(item.index).padStart(2, '0')}</span> {item.eyebrow}</p>
                 <div className={styles.imageFrame} style={loadImages ? undefined : { backgroundImage: `url(${item.src.blurDataURL})` }}>
                   {loadImages && <PhotoImage photo={item} />}
                   <noscript><PhotoImage photo={item} /></noscript>
-                  <span className={styles.photoNumber} aria-hidden="true">{String(item.index).padStart(2, '0')}</span>
                 </div>
-                <figcaption className={styles.caption}>
-                  <p className={styles.photoEyebrow}>{item.eyebrow}</p>
-                  <h3>{item.caption}</h3>
-                </figcaption>
+                <figcaption className={styles.caption}>{item.caption}</figcaption>
               </figure>
             ) : (
               <figure className={styles.callout} key={item.eyebrow}>

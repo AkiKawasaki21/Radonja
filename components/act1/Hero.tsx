@@ -1,110 +1,185 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { gsap } from "@/lib/gsap";
+import { createPortraitSweep } from "@/lib/portrait-sweep";
+import { acquireScrollLock } from "@/lib/scroll-lock";
 import { nextMatch } from "@/content/schedule";
-import stare from "@/public/photos/hero-stare.jpg";
-import flag from "@/public/photos/hero-flag.jpg";
+import portraitPhoto from "@/public/portraits/radonja-main.png";
+import hiddenPortrait from "@/public/portraits/hidden-portrait.png";
+import Signature from "./Signature";
+import PortraitWaves from "./PortraitWaves";
 import styles from "./Hero.module.css";
 
 export default function Hero() {
-  const section = useRef<HTMLElement>(null);
-  const portrait = useRef<HTMLButtonElement>(null);
-  const reveal = useRef<HTMLDivElement>(null);
-  const cursor = useRef<HTMLSpanElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const planeRef = useRef<HTMLDivElement>(null);
+  const surfaceRef = useRef<HTMLButtonElement>(null);
+  const revealRef = useRef<HTMLDivElement>(null);
+  const atmosphereRef = useRef<HTMLDivElement>(null);
+  const sweepRef = useRef<SVGPathElement>(null);
+  const lockControlRef = useRef<HTMLDivElement>(null);
+  const releaseLockRef = useRef<(() => void) | null>(null);
+  const [portraitLocked, setPortraitLocked] = useState(false);
+  const unlockPortrait = useCallback(() => {
+    releaseLockRef.current?.();
+    releaseLockRef.current = null;
+    setPortraitLocked(false);
+  }, []);
 
   useEffect(() => {
-    const cursorElement = cursor.current;
+    if (!portraitLocked) return;
+    const release = acquireScrollLock();
+    releaseLockRef.current = release;
+    const mobile = window.matchMedia("(max-width: 767px), (pointer: coarse)");
+    const onViewport = () => { if (!mobile.matches) unlockPortrait(); };
+    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") unlockPortrait(); };
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) unlockPortrait();
+    });
+    observer.observe(surfaceRef.current!);
+    mobile.addEventListener("change", onViewport);
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("pagehide", unlockPortrait);
+    return () => {
+      release();
+      if (releaseLockRef.current === release) releaseLockRef.current = null;
+      observer.disconnect();
+      mobile.removeEventListener("change", onViewport);
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("pagehide", unlockPortrait);
+    };
+  }, [portraitLocked, unlockPortrait]);
+
+  useEffect(() => {
+    const section = sectionRef.current!;
+    const stage = stageRef.current!;
+    const frame = frameRef.current!;
+    const plane = planeRef.current!;
+    const surface = surfaceRef.current!;
+    const reveal = revealRef.current!;
+    const clipPath = sweepRef.current!;
+    const signature = section.querySelector<HTMLElement>("[data-signature]")!;
+    const stroke = signature.querySelector("path")!;
     const media = gsap.matchMedia();
+
     media.add({
-      desktop: "(min-width: 768px) and (hover: hover) and (pointer: fine)",
-      mobile: "(max-width: 767px), (pointer: coarse)",
       reduced: "(prefers-reduced-motion: reduce)",
+      small: "(max-width: 767px)",
+      mouse: "(hover: hover) and (pointer: fine)",
     }, (context) => {
-      const { desktop, mobile, reduced } = context.conditions!;
-      const target = portrait.current!;
-      const layer = reveal.current!;
-      let pressed = false;
-      const crossfade = (visible: boolean) => {
-        gsap.to(layer, { opacity: visible ? 1 : 0, scale: visible && !reduced ? 1.04 : 1, duration: reduced ? 0 : 0.65, ease: "power2.out", overwrite: mobile && !reduced ? false : "auto" });
-      };
-      const enter = () => {
-        crossfade(true);
-        if (desktop) gsap.set(cursorElement, { autoAlpha: 1 });
-      };
-      const leave = () => {
-        if (!pressed) crossfade(false);
-        gsap.set(cursorElement, { autoAlpha: 0 });
-      };
-      const move = (event: PointerEvent) => {
-        const bounds = target.getBoundingClientRect();
-        gsap.set(cursorElement, { x: event.clientX - bounds.left, y: event.clientY - bounds.top });
-      };
-      const toggle = () => {
-        pressed = !pressed;
-        target.setAttribute("aria-pressed", String(pressed));
-        crossfade(pressed);
-      };
-      if (desktop) {
-        target.addEventListener("pointerenter", enter);
-        target.addEventListener("pointerleave", leave);
-        target.addEventListener("pointermove", move);
-      }
-      target.addEventListener("click", toggle);
-      if (mobile && !reduced) {
-        gsap.fromTo(layer, { opacity: 0, scale: 1 }, {
-          opacity: 1, scale: 1.04, ease: "none",
-          scrollTrigger: { trigger: section.current, start: "top top", end: "65% top", scrub: true },
+      const { reduced, small, mouse } = context.conditions!;
+      const cleanupSweep = createPortraitSweep({
+        plane, surface, reveal, clipPath, reduced, mouse,
+      });
+
+      if (!reduced) {
+        gsap.set(signature, { autoAlpha: 0 });
+        gsap.set(stroke, { drawSVG: "0%" });
+        const timeline = gsap.timeline({
+          scrollTrigger: {
+            id: "portrait-story",
+            trigger: section,
+            start: "top top",
+            end: () => `+=${section.offsetHeight - stage.offsetHeight}`,
+            pin: stage,
+            pinSpacing: false,
+            scrub: 0.65,
+            invalidateOnRefresh: true,
+            anticipatePin: 1,
+          },
         });
+        timeline.to(lockControlRef.current, { autoAlpha: 0, pointerEvents: "none", duration: 0.055 }, 0.01)
+          .to(frame, { scale: small ? 0.59 : 0.43, duration: 0.67, ease: "power1.inOut" }, 0.05)
+          .fromTo(atmosphereRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.1)
+          .to(signature, { autoAlpha: 1, duration: 0.16 }, 0.22)
+          .to(stroke, { drawSVG: "100%", duration: 0.54, ease: "none" }, 0.29)
+          .to(frame, { filter: "brightness(0.68)", duration: 0.36 }, 0.3)
+          .to({}, { duration: 0.17 });
       }
-      return () => {
-        target.removeEventListener("pointerenter", enter);
-        target.removeEventListener("pointerleave", leave);
-        target.removeEventListener("pointermove", move);
-        target.removeEventListener("click", toggle);
-        target.setAttribute("aria-pressed", "false");
-        gsap.killTweensOf([layer, cursorElement]);
-        gsap.set(layer, { clearProps: "opacity,transform" });
-        gsap.set(cursorElement, { clearProps: "visibility,opacity,transform" });
-      };
-    }, section);
+
+      return cleanupSweep;
+    });
     return () => media.revert();
   }, []);
 
   return (
-    <section ref={section} className={styles.hero} aria-labelledby="hero-title" id="hero">
-      <button ref={portrait} className={styles.portrait} type="button" aria-label="Reveal Radonja with the Montenegro flag" aria-pressed="false">
-        <Image id="hero-stare" src={stare} alt="Radonja looking up under stadium lights, photographed in black and white" fill priority quality={65} sizes="(max-width: 767px) 100vw, 58vw" placeholder="blur" className={styles.stare} />
-        <div ref={reveal} className={styles.reveal}>
-          <Image id="hero-flag" src={flag} alt="Radonja wearing the red and gold flag of Montenegro" fill priority quality={65} sizes="(max-width: 767px) 100vw, 58vw" placeholder="blur" className={styles.flag} />
+    <section ref={sectionRef} id="hero" className={styles.story} aria-labelledby="hero-title">
+      <span id="signature" className={styles.signatureAnchor} aria-hidden="true" />
+      <div ref={stageRef} className={styles.stage} data-testid="portrait-stage">
+        <div ref={atmosphereRef} className={styles.atmosphere} aria-hidden="true">
+          <span>THE MINUTES</span><em>NOBODY SEES.</em>
+          <svg viewBox="0 0 1440 1000" preserveAspectRatio="xMidYMid slice">
+            <path d="M-300 800C500 1000 700-400 1500 160S1700 1200 500 1000-400 200 20 0M-120 900C550 980 900-320 1440 210S1500 1050 470 900-230 150 120-100M-50 980C710 850 1000-150 1500 380S1240 1000 480 770-110 200 300-120" />
+          </svg>
         </div>
-        <span className={styles.imageShade} />
-        <span ref={cursor} className={styles.cursor} aria-hidden="true"><i />MNE</span>
-      </button>
 
-      <div className={styles.masthead} aria-hidden="true">
-        <span className={styles.number}>15<span className={styles.numberBand} /></span>
-        <span className={styles.location}>MONTENEGRO <span>→</span> CALIFORNIA</span>
+        <div ref={frameRef} className={styles.frame} data-testid="hero-frame">
+          <button id="portrait-explorer" ref={surfaceRef} className={styles.portraitSurface} type="button" aria-label="Reveal the hidden gold portrait" aria-pressed="false" aria-describedby="portrait-instructions" data-portrait-locked={portraitLocked} data-lenis-prevent={portraitLocked ? "" : undefined}>
+            <div ref={planeRef} className={styles.plane} data-testid="portrait-plane">
+              <svg className={styles.filterDefinitions} aria-hidden="true">
+                <defs>
+                  <clipPath id="portrait-sweep" clipPathUnits="objectBoundingBox">
+                    <path ref={sweepRef} d="M0 0Z" />
+                  </clipPath>
+                </defs>
+              </svg>
+              <Image id="hero-stare" src={portraitPhoto} alt="Radonja looking toward the sky before the match" fill priority unoptimized sizes="(max-width: 767px) 104svh, 112vw" placeholder="blur" className={styles.basePhoto} />
+              <PortraitWaves clipId="portrait-sweep" />
+              <div ref={revealRef} className={styles.reveal} data-testid="portrait-reveal" aria-hidden="true">
+                <div className={styles.artBounds}>
+                  <Image id="hero-reveal" src={hiddenPortrait} alt="" fill loading="eager" fetchPriority="low" unoptimized sizes="(max-width: 767px) 63svh, 68vw" placeholder="blur" className={styles.hiddenPhoto} />
+                </div>
+              </div>
+            </div>
+          </button>
+          <div className={styles.shade} aria-hidden="true" />
+          <header className={styles.masthead}>
+            <a href="#hero" aria-label="Radonja, back to the top" className={styles.monogram} onClick={unlockPortrait}>15<span /></a>
+            <span className={styles.location}>MONTENEGRO <i>→</i> CALIFORNIA</span>
+          </header>
+          <div ref={lockControlRef} className={styles.exploreControl}>
+            <button
+              type="button"
+              className={styles.exploreLock}
+              aria-pressed={portraitLocked}
+              aria-controls="portrait-explorer"
+              aria-describedby="portrait-lock-status"
+              onClick={() => portraitLocked ? unlockPortrait() : setPortraitLocked(true)}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                <rect x="5" y="10" width="14" height="11" rx="2" />
+                <path d={portraitLocked ? "M8 10V6a4 4 0 0 1 8 0v4" : "M8 10V6a4 4 0 0 1 7.7-1.5"} />
+                <path d="M12 14v3" />
+              </svg>
+              <span>{portraitLocked ? "Unlock scroll" : "Lock to explore"}</span>
+            </button>
+            <span id="portrait-lock-status" className={styles.lockStatus} role="status">
+              {portraitLocked ? "Swipe freely. Tap to unlock." : "Pause scrolling. Explore his portrait."}
+            </span>
+          </div>
+          <div className={styles.titleBlock}>
+            <p className={styles.eyebrow}>Nº 15 · STRIKER · MONTENEGRO</p>
+            <h1 id="hero-title">RADONJA</h1>
+            <span className={styles.tape} aria-hidden="true" />
+          </div>
+          <p id="portrait-instructions" className={styles.portraitHint}>
+            <span className={styles.mouseHint}>SWIPE ACROSS THE PORTRAIT</span>
+            <span className={styles.touchHint}>{portraitLocked ? "SWIPE TO REVEAL" : "TOUCH TO REVEAL"}</span>
+          </p>
+          <div className={styles.bottom}>
+            <a className={styles.nextMatch} href={nextMatch.sourceUrl} target="_blank" rel="noreferrer">
+              <span>NEXT MATCH ↗</span>
+              <span>{nextMatch.opponent} <i>·</i> <time dateTime={nextMatch.dateTime}>{nextMatch.date}</time></span>
+            </a>
+            <a className={styles.scrollCue} href="#signature" aria-label="Scroll to the signature" onClick={unlockPortrait}><span>SCROLL INTO THE STORY</span><i /></a>
+          </div>
+        </div>
+        <Signature />
       </div>
-
-      <div className={styles.titleBlock}>
-        <p className={styles.eyebrow}>Nº 15 · STRIKER · MONTENEGRO</p>
-        <h1 id="hero-title">RADONJA</h1>
-        <span className={styles.tape} aria-hidden="true" />
-      </div>
-
-      <div className={styles.bottom}>
-        <a className={styles.nextMatch} href={nextMatch.sourceUrl} target="_blank" rel="noreferrer">
-          <span>NEXT MATCH <span aria-hidden="true">↗</span></span>
-          <span className={styles.fixture}><span aria-hidden="true">— </span>{nextMatch.opponent} <span>·</span> <time dateTime={nextMatch.dateTime}>{nextMatch.date}</time></span>
-        </a>
-        <a href="#signature" className={styles.scrollCue} aria-label="Scroll to signature">
-          <span>SCROLL TO DISCOVER</span>
-          <i aria-hidden="true" />
-        </a>
-      </div>
-      <span className={styles.portraitHint} aria-hidden="true">HOLDING HOME CLOSE. <span>↗</span></span>
     </section>
   );
 }

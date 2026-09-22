@@ -1,6 +1,6 @@
-# RADONJA — Act 1
+# RADONJA — Portrait, archive, and field stories
 
-Next.js 15 App Router, TypeScript, Tailwind CSS v4, GSAP, and Lenis. `RADONJA-BRIEF.md` remains the source of truth. The original brief and all 14 supplied photographs are unchanged.
+Next.js 15 App Router, TypeScript, Tailwind CSS v4, GSAP, and Lenis. The brief supplies the identity, palette, typography, and content; the latest requested portrait and scroll redesign determines the Act 1 presentation. `RADONJA-BRIEF.md`, all 14 supplied photographs, and the two supplied portrait originals are unchanged.
 
 ## Run
 
@@ -11,21 +11,46 @@ npm ci
 npm run dev
 ```
 
-Open http://localhost:3000. Production: `npm run build && npm start`.
+Open [localhost:3000](http://localhost:3000). Production: `npm run build && npm start`.
+
+## Experience
+
+The existing tape loader opens into a centered, upward-looking portrait. The supplied `radonjamain.PNG` fills the hero and tilts subtly with a desktop pointer. The supplied `radonja.PNG` sits in the same image coordinate space, aligned by facial landmarks. Swiping across the screen sends a broad, curved stream through the gold artwork. A continuously curved boundary, tapered ends, and subtle ripples give it liquid movement; the wake recedes within 580ms of the last movement. Warm contour lines drift around the head and respond to the same swipe, with a brighter layer following the reveal. On phones, the optional Lock to explore control pauses page scrolling so touch gestures can move freely over the portrait. Unlock scroll restores navigation; the default remains normal vertical scrolling. The browser's native cursor is retained.
+
+Scrolling scales down the entire original hero frame while the gold signature writes across it. The portrait remains at the center of this composition. The signature is a child of the hero scene, so this transition preserves the same frame instead of switching between separate portraits.
+
+Photographs enter from the lower-right as the signature scene gives way to an open, staggered panorama. Continued downward scrolling moves the viewpoint rightward through the archive on both desktop and mobile. The ten photographs keep their original order and captions, with callouts after photographs 4 and 8. On mobile, each photo keeps its full source aspect ratio and fits within the available screen height; the first frame’s label arrives after the outgoing signature caption. Photographs retain their original colors at every input mode, including desktop. The full quote follows the gallery.
+
+The On-field / Off-field gateway follows the quote. On-field opens a coach-facing film-room overlay with six individually selectable clip spaces, explicitly marked as footage coming soon. Off-field opens the story supplied by the owner: his grandfather Mojas Radonjic, his roots in Montenegro, playing for two clubs through a two-way contract, and the difficult decision to pursue a future in American college soccer. Both overlays support Escape, visible close controls, focus restoration, and scrolling within the overlay.
 
 ## Content
 
 - `content/schedule.ts`: manually maintained next match, with the official UCR source and verification date.
 - `content/quote.ts`: the brief's placeholder quote, highlighted keyword, and gallery fragments.
+- `content/profile.ts`: the supplied off-field story.
+- `content/clips.ts`: six planned clip categories and their photo previews; video footage is not supplied yet.
 - `content/gallery.ts`: the ten photographs in the brief's order; callouts follow photographs 4 and 8.
 - `public/signature.svg` and `content/signature.ts`: matching placeholder single-stroke artwork. Replace both when the signed original arrives.
 - `public/photos/`: stable filenames; Next serves optimized AVIF/WebP copies with embedded blur placeholders.
+- `public/portraits/`: exact PNG copies of the active portrait assets. Next Image serves these unoptimized to preserve the supplied pixels; blur placeholders appear only during loading.
 
 Each Act 1 section is a client component in `components/act1/`. `lib/gsap.ts` registers the three plugins only in the browser. `app/providers.tsx` connects Lenis to the GSAP ticker and ScrollTrigger.
 
 The loader counts decoded hero images and `document.fonts.ready`. Successful loads end in the tape wipe; slow or failed loads reveal the page at the deadline without falsely reporting completion. A CSS fail-open guarantees the overlay cannot linger beyond 1.6 seconds, even before hydration. Session storage skips repeat visits before paint.
 
-Reduced motion removes the loader, smooth scrolling, parallax, text entrance, signature draw, and gallery pin. The full signature and quote remain visible. Under 768px and with reduced motion, the gallery uses native horizontal scroll-snap. Desktop gallery keyboard controls: Left/Right, Home/End. The portrait also supports Enter/Space.
+Reduced motion removes the loader, smooth scrolling, portrait tilt and trailing reveal, frame zoom, parallax, text entrance, signature draw, and gallery pin. The full signature and quote remain visible, and the gallery uses native horizontal scroll-snap at every viewport size. Gallery keyboard controls are Left/Right and Home/End. The portrait supports Enter/Space to toggle a still, full reveal; reduced-motion pointer activation uses the same still toggle.
+
+## Portrait assets
+
+The active portrait originals live one directory above this project: `../radonjamain.PNG` and `../radonja.PNG`. Both PNGs retain their full 1122×1402 dimensions and original encoded content, including the gold portrait’s transparency. Neither layer is recompressed or resized on the server. The previously supplied `spatialarea.HEIC` remains untouched but is no longer the hero source.
+
+To regenerate the browser copies after installing dependencies:
+
+```sh
+node scripts/prepare-portraits.mjs
+```
+
+The script copies the originals directly to `public/portraits/radonja-main.png` and `public/portraits/hidden-portrait.png`. It does not modify `public/photos/` or the supplied originals.
 
 ## Check
 
@@ -40,21 +65,26 @@ npm run test:e2e
 PLAYWRIGHT_BASE_URL=http://localhost:3001 npm run test:e2e
 ```
 
-The browser suite checks all five sections, exact gallery order, desktop hover and keyboard controls, mobile scroll reveal, reduced motion, live preference/breakpoint changes, session skipping, and browser errors/warnings. `check:bundle` sums gzip sizes of the homepage's production JavaScript chunks and fails at 200 KB.
+The existing browser suite covers the earlier portrait geometry and reveal; its asset-coordinate and mask assertions need updating for the latest PNG and ribbon design. No verification was run for this revision at the user's request. `check:bundle` sums gzip sizes of the homepage's production JavaScript chunks and fails at 200 KB.
 
-## Initial verification
+## Deploy
 
-- Production build, TypeScript, ESLint, and five Chrome behavior tests pass; no browser warnings, console errors, or uncaught exceptions.
-- Homepage JavaScript: **171.9 KB gzip** (decimal KB, nine modern-browser chunks).
-- Optimized hero: **32.3 KB AVIF** at the measured mobile size; **65.1 KB** for the largest configured 1920px request. Original JPEGs remain untouched.
-- Lighthouse 13.5 mobile, direct DevTools throttling at 150ms latency, 1.638 Mbps down, 750 Kbps up, and 4× CPU slowdown: **LCP 2.3s**, performance **95**, CLS **0**.
-- Lighthouse's default simulated slow-4G model: **LCP 3.1s**, performance **94**, accessibility **100**. This stricter estimate remains above the 2.5s target; production field performance still needs validation after deployment.
-- Measurements used local production serving with a cold browser cache and cached Next image transformations. Gallery images are deferred until the section approaches the viewport.
+Every push to `main` publishes the site to GitHub Pages through `.github/workflows/pages.yml`. That build sets `GITHUB_PAGES=true`, which switches `next.config.ts` to a static export under the repository's base path with unoptimized images. Preview the Pages build locally:
 
-Reproduce the direct-throttling measurement with the production server on port 3001:
+```sh
+GITHUB_PAGES=true PAGES_BASE_PATH=/Radonja npx next build
+```
+
+The files land in `out/`; serve that folder at `/Radonja/`.
+
+## Performance verification
+
+The targets remain less than 200 KB of gzipped homepage JavaScript and LCP below 2.5 seconds. The earlier scaffold's measurements do not describe this redesigned hero. Final production performance measurements for the redesign are pending; gallery images remain deferred until the section approaches the viewport.
+
+Measure with the production server on port 3001:
 
 ```sh
 npx lighthouse http://localhost:3001 --only-categories=performance --throttling-method=devtools --throttling.requestLatencyMs=150 --throttling.downloadThroughputKbps=1638 --throttling.uploadThroughputKbps=750 --throttling.cpuSlowdownMultiplier=4 --chrome-flags='--headless=new'
 ```
 
-Only Act 1 is built. The quote and signature are intentionally placeholders from the brief; later acts are outside this scaffold.
+The portrait, archive, quote, and On-field / Off-field overlays are built. Match clips have no video assets yet; their spaces are intentional placeholders. The quote and signature remain placeholders from the brief.

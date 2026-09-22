@@ -64,7 +64,7 @@ export default function Loader() {
       overlay.current?.setAttribute("aria-valuenow", String(Math.round(value * 100)));
       if (completed === 3) finishTimer = setTimeout(() => finish(true), Math.max(170, 550 - (performance.now() - startedAt)));
     };
-    for (const id of ["hero-stare", "hero-flag"]) {
+    for (const id of ["hero-stare", "hero-reveal"]) {
       const img = document.getElementById(id) as HTMLImageElement | null;
       if (!img) continue;
       const decoded = () => { void img.decode().then(advance).catch(() => { /* Failed images never count as loaded. */ }); };
