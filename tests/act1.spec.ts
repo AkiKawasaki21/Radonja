@@ -33,7 +33,8 @@ const portraitName = "Reveal the hidden gold portrait";
 async function openPage(page: Page, reducedMotion = false) {
   const response = await page.goto("/", { waitUntil: "domcontentloaded" });
   expect(response?.status()).toBe(200);
-  await expect(page.getByRole("heading", { name: "RADONJA", exact: true })).toBeVisible();
+  // The heading splits the name across two lines, so it carries its own label.
+  await expect(page.getByRole("heading", { name: "Andrija Radonjic", exact: true })).toBeVisible();
   await expect(page.getByTestId("loader")).toHaveCount(0);
   await page.evaluate(() => document.fonts.ready);
   if (!reducedMotion) await expect(page.locator("html")).toHaveClass(/lenis/);
